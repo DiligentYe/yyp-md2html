@@ -1,0 +1,20 @@
+{
+  "name": "yyp-md2html",
+  "version": "0.0.2",
+  "description": "convert markdown documentation to html and show on the browser ",
+  "bin": {
+    "yyp-md2html": "./bin/md2html"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "markdown"
+  ],
+  "author": "yeyingping",
+  "mails": "yeyingping15@mails.ucas.ac.cn",
+  "license": "ISC",
+  "dependencies": {
+    "marked": "^0.3.6"
+  }
+}

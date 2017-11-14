@@ -1,0 +1,78 @@
+#!/usr/bin/env node
+
+
+
+// 引入系统包
+let path = require('path');
+
+// 自定义包
+let md2html = require('../src/index');
+
+// console.log(process.argv);
+// 当前目录
+let cwd = process.cwd();
+
+// 命令行参数
+let args = process.argv.slice(2);
+
+// 第一个参数必须为路径，第二个参数可以不提供 or 目标路径 or 参数
+if (!isPath(args[0]) || (args[1] !== undefined && !/^--/.test(args[1]) && !isPath(args[1]))) {
+    return console.log('Please enter valid path');
+}
+
+// 处理两个路径为绝对路径
+let from = path.isAbsolute(args[0]) ? args[0] : path.join(cwd, args[0]);
+args.splice(0, 1);
+// 允许不提供目标地址
+let target;
+if(args[0] ===undefined) {
+	target = cwd;
+} else if(!/^--/.test(args[0])) {
+	target = path.isAbsolute(args[0]) ? args[0] : path.join(cwd, args[0]);
+	args.splice(0, 1);
+} 
+
+// 处理配置选项 port tmp auto watch cssurl htmlurl local
+// --port=9090 --tmp=/tmp --watch=false --cssurl=./base.css --htmlurl=./base.html --local
+let options = {};
+
+// markdown文件解析到本地, 默认false,使用浏览器进行展示
+options['local'] = false;
+
+for (let i = 0; i < args.length; ++i) {
+    let arg = args[i];
+    if (arg == '--local') {
+        options['local'] = true;
+    } else if (/^--(\w*)=([\w|\.|\/|\\]*)/.test(arg)) {
+        arg.replace(/^--(\w*)=([\w|\.|\/|\\]*)/, function(match, $1, $2) {
+        	// 对路径进行处理
+        	if($1 == 'cssurl' || $1 == 'htmlurl' || $1 == 'tmp') {
+        		if(isPath($2)) {
+        			$2 = path.isAbsolute($2) ? $2 : path.join(cwd, $2);
+        		} else {
+        			return console.log('Please enter valid path');
+        		}
+        	}
+            options[$1] = $2;
+        })
+    } else {
+        return console.log('Please enter valid argument format');
+    }
+}
+
+// 初始化默认参数
+md2html.setup(options);
+
+// 根据用户需求调用不同的功能
+if(options.local) {
+	// 文件换后存放在本地文件夹中
+	md2html.convert(from, target);
+} else {
+	// 否则在浏览器中展示md文档
+	md2html.show(from, target);
+}
+
+function isPath(str) {
+    // 匹配／Users or ./ or ../ or C: or .\ or ..\
+    return /^\/|^\.\/|^\.\.\/|^[A-Za-z]\:|^\.\\|^\.\.\\/.test(str);
+}
